@@ -1,0 +1,115 @@
+# Initialize the list of directory paths with corresponding experiment versions
+project_info <- list(
+  list(dir = "G:/My Drive/Projects/RM_adjustment/Exp1A/", exp_version = "Exp1A"),
+  list(dir = "G:/My Drive/Projects/RM_adjustment/Exp1B/", exp_version = "Exp1B"),
+  list(dir = "G:/My Drive/Projects/RM_adjustment/Exp1C/", exp_version = "Exp1C")
+)
+
+# Initialize an empty data frame to store combined results from all projects
+final_data <- data.frame()
+
+# Loop through each directory and experiment information
+for (project in project_info) {
+  # Extract directory and experiment version
+  project_dir <- project$dir
+  exp_version <- project$exp_version
+  
+  # Set the working directory
+  setwd(project_dir)
+  
+  # Initialize an empty list to store data frames
+  raw_dfs <- list()
+  
+  # List all files in the directory with the control pattern
+  files <- list.files(pattern = "^[0-9]+_exp1_.*\\.csv$")
+  
+  # Load data files
+  for (i in seq_along(files)) {
+    file_name <- files[i]
+    # Read the CSV file and store it in the list
+    raw_dfs[[i]] <- read.csv(file_name, header = TRUE)
+    # Assign names to each data frame in the list for easier access
+    names(raw_dfs)[i] <- file_name
+  }
+  
+  # Initialize a temporary data frame to store combined results for this directory
+  data <- data.frame()
+  
+  # Loop through each data frame in raw_dfs
+  for (y in seq_along(raw_dfs)) {
+    # Extract the data frame
+    df <- raw_dfs[[y]]
+    
+    # Finding the first row after practice trials
+    start_point <- as.numeric(which(!is.na(df$key_resp_4.rt)))
+    # Finding the last trial of the main experiment
+    end_point <- ifelse(nrow(df) == 129, 
+                        as.numeric(which(!is.na(df$text.started))) - 1, 
+                        as.numeric(nrow(df)))
+    
+    df <- df[(start_point + 1):(end_point), ]
+    
+    df <- df %>%
+      # Selecting relevant columns
+      select(
+        participant,
+        stim_length,
+        amount,
+        center_to_center,
+        w,
+        trial_type,
+        loop.thisN,
+        response,
+        key_resp.rt,
+        starting_width_deg,
+        starting_space_deg,
+        response_width_degree,
+        response_spacing_degree,
+        next_5.rt,
+        resp_group
+      ) %>%
+      # Remove rows that contains between block rows
+      na.omit() %>%
+      # Taking the absolute value of the response width
+      mutate(response_width_degree = abs(response_width_degree)) %>%
+      # Getting rid of the "num_" prefix in the response column
+      mutate(response = as.numeric(gsub("num_", "", response))) %>%
+      # Handle response_spacing_degree
+      mutate(
+        response_spacing_degree = case_when(
+          response_spacing_degree == "9999" ~ 0,
+          as.numeric(response_spacing_degree) >= 0 ~ as.numeric(response_spacing_degree)
+        ),
+        starting_space_deg = case_when(
+          starting_space_deg > 3000 ~ 0,
+          starting_space_deg < 3000 ~ starting_space_deg
+        )
+      ) %>%
+      # Add the experiment version information
+      mutate(exp_version = exp_version)
+    
+    data <- bind_rows(data, df)
+  }
+  
+  # Combine results from this directory into final_data
+  final_data <- bind_rows(final_data, data)
+
+}
+
+
+# Re-arrange col order
+col_order <- c("participant", "resp_group", "trial_type", "loop.thisN", "amount", "response" , "key_resp.rt", "center_to_center", "response_spacing_degree", "starting_space_deg", "w", "response_width_degree", "starting_width_deg", "next_5.rt", "stim_length", "exp_version")
+final_data <- final_data[, col_order]
+
+#adding plus one to get rid of zeros
+final_data$loop.thisN <- final_data$loop.thisN + 1 
+
+#renaming columns
+colnames(final_data) <- c("subID", "keyboard_condition", "trial_type", "trial_number", "correct_num", "response_num", "response_rt", "correct_space", "response_space", "probe_space", "correct_width", "response_width", "probe_width", "adjustment_duration", "stim_length", "exp_version")
+
+final_data$subID <- as.factor(final_data$subID)
+
+setwd("G:/My Drive/Projects/RM_adjustment/")
+
+# Save the combined data
+write.csv(final_data, "all_exps.csv", row.names = FALSE)
