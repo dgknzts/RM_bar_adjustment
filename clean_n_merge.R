@@ -1,3 +1,6 @@
+library(tidyverse)
+
+
 # Initialize the list of directory paths with corresponding experiment versions
 project_info <- list(
   list(dir = "G:/My Drive/Projects/RM_adjustment/Exp1A/", exp_version = "Exp1A"),
@@ -108,8 +111,38 @@ final_data$loop.thisN <- final_data$loop.thisN + 1
 colnames(final_data) <- c("subID", "keyboard_condition", "trial_type", "trial_number", "correct_num", "response_num", "response_rt", "correct_space", "response_space", "probe_space", "correct_width", "response_width", "probe_width", "adjustment_duration", "stim_length", "exp_version")
 
 final_data$subID <- as.factor(final_data$subID)
+df <- final_data
+
+
+# Computing variables
+df <- df %>%
+  mutate(
+    number_deviation = response_num - correct_num,
+    width_deviation = response_width - correct_width,
+    spacing_deviation = response_space - correct_space,
+    
+    response_stim_length = (response_space * (response_num- 1)) + response_width,
+    compression_rate = response_stim_length / stim_length,
+    
+    actual_pooled_width = correct_width * correct_num,
+    response_pooled_width = response_width * response_num,
+    pooled_width_deviation = response_pooled_width - actual_pooled_width,
+    
+    actual_width_density = actual_pooled_width / stim_length,
+    response_width_density = response_pooled_width / response_stim_length,
+    width_density_deviation = response_width_density - actual_width_density
+  )
+
+# Filtering noise
+df <-  df %>%
+  filter(adjustment_duration > 1) %>% #adjustment time is too quick
+  filter(adjustment_duration < 15) %>% #NOT SURE! 15 sec is too long
+  filter(response_rt < 10) %>% #Yildirim & Sayim. Low accuracy and high confidence in redundancy masking
+  filter(number_deviation < 4) %>% filter(number_deviation > -4) #same
+
+
 
 setwd("G:/My Drive/Projects/RM_adjustment/")
 
 # Save the combined data
-write.csv(final_data, "all_exps.csv", row.names = FALSE)
+write.csv(df, "processed.csv", row.names = FALSE)

@@ -1,0 +1,95 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+# Before modelling
+```{r Libraries, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(ggthemes)
+library(svglite)
+library(lme4)
+library(emmeans)
+```
+
+```{r Importing, include=FALSE}
+setwd("G:/My Drive/Projects/RM_adjustment/")
+data <- read.csv("processed.csv")
+```
+
+```{r Before modelling, echo=TRUE}
+data$subID <- as.factor(data$subID)
+data$correct_num <- as.factor(data$correct_num)
+data$correct_width <- as.factor(data$correct_width)
+data$response_num <- as.factor(data$response_num)
+data$exp_version <- as.factor(data$exp_version)
+data$keyboard_condition <- as.factor(data$keyboard_condition)
+data$trial_type <- as.factor(data$trial_type)
+data$number_deviation <- as.factor(data$number_deviation)
+
+
+str(data)
+#Selecting experiment one
+data <- data %>% filter(exp_version == "Exp1A")
+colnames(data)
+
+# Set reference num dev 0
+data$number_deviation <- relevel(data$number_deviation, ref = "0")
+levels(data$number_deviation)
+```
+
+
+# Width Deviation as the outcome variable
+
+```{r}
+model_1.0 <- lmer(width_deviation ~ number_deviation + 
+                  correct_num + 
+                  correct_width + 
+                  correct_space + 
+                  spacing_deviation + 
+                  compression_rate +
+                  (1|subID), 
+                data = data)
+summary(model_1.0)
+
+sjPlot::tab_model(
+  model_1.0,
+  p.style = 'scientific_stars',
+  show.se = T,
+  show.stat = T,
+  digits = 3
+)
+```
+
+```{r}
+model_1.1 <- lmer(width_deviation ~ number_deviation + 
+                    correct_num + 
+                    correct_width + 
+                    #correct_space + 
+                    spacing_deviation + 
+                    compression_rate +
+                    (1|subID), 
+                  data = data)
+
+anova(model_1.0, model_1.1)
+```
+
+```{r}
+model_1.2 <- lmer(width_deviation ~ number_deviation + 
+                    correct_num + 
+                    correct_width + 
+                    #correct_space + 
+                    #spacing_deviation + 
+                    compression_rate +
+                    (1|subID), 
+                  data = data)
+
+anova(model_1.1, model_1.2)
+```
+
+```{r}
+pairwise_results <- emmeans(model_1.1, pairwise ~ number_deviation | correct_width)
+
+summary(pairwise_results$contrasts, infer = TRUE, adjust = "Tukey")
+```
+
