@@ -76,7 +76,7 @@ model_1.1 <- lmer(width_deviation ~ number_deviation +
 anova(model_1.0, model_1.1)
 
 
-Spacing deviation and compression rate is correlated so selecting one of them
+# Spacing deviation and compression rate is correlated so selecting one of them
 
 
 model_1.20 <- lmer(width_deviation ~ number_deviation + 
