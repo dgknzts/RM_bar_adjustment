@@ -1,11 +1,5 @@
----
-title: "Model"
-output: html_notebook
----
-
-# Before modelling
-
-```{r Libraries, include=FALSE}
+# Before modelling -----------------------------------------------------------
+  
 library(tidyverse)
 library(ggplot2)
 library(ggthemes)
@@ -22,14 +16,12 @@ model_table <- function(modelx) {
     digits = 3
   )
 }
-```
 
-```{r Importing, include=FALSE}
+
 setwd("G:/My Drive/Projects/RM_adjustment/")
 data <- read.csv("processed.csv")
-```
 
-```{r Before modelling, echo=TRUE}
+
 data$subID <- as.factor(data$subID)
 data$correct_num <- as.factor(data$correct_num)
 data$correct_width <- as.factor(data$correct_width)
@@ -47,33 +39,31 @@ colnames(data)
 # Set reference num dev 0
 data$number_deviation <- relevel(data$number_deviation, ref = "0")
 levels(data$number_deviation)
-```
 
-```{r}
+
+
 correlation_matrix <- cor(data %>% select(width_deviation, 
-                  correct_space,
-                  spacing_deviation, 
-                  compression_rate), use = "complete.obs")
+                                          correct_space,
+                                          spacing_deviation, 
+                                          compression_rate), use = "complete.obs")
 round(correlation_matrix, 2)
 
-```
+# Modelling -----------------------------------------------------------
 
-# Width Deviation as the outcome variable
+## Width Deviation as the outcome variable -----------------------
 
-```{r}
+
 model_1.0 <- lmer(width_deviation ~ number_deviation + 
-                  correct_num + 
-                  correct_width + 
-                  correct_space + 
-                  spacing_deviation + 
-                  compression_rate +
-                  (1|subID), 
-                data = data)
+                    correct_num + 
+                    correct_width + 
+                    correct_space + 
+                    spacing_deviation + 
+                    compression_rate +
+                    (1|subID), 
+                  data = data)
 
 model_table(model_1.0)
-```
 
-```{r}
 model_1.1 <- lmer(width_deviation ~ number_deviation + 
                     correct_num + 
                     correct_width + 
@@ -84,85 +74,57 @@ model_1.1 <- lmer(width_deviation ~ number_deviation +
                   data = data)
 
 anova(model_1.0, model_1.1)
-```
+
 
 Spacing deviation and compression rate is correlated so selecting one of them
 
-```{r}
+
 model_1.20 <- lmer(width_deviation ~ number_deviation + 
-                    correct_num + 
-                    correct_width + 
-                    #correct_space + 
-                    #spacing_deviation + 
-                    compression_rate +
-                    (1|subID), 
-                  data = data)
+                     correct_num + 
+                     correct_width + 
+                     #correct_space + 
+                     #spacing_deviation + 
+                     compression_rate +
+                     (1|subID), 
+                   data = data)
 
 model_1.21 <- lmer(width_deviation ~ number_deviation + 
-                    correct_num + 
-                    correct_width + 
-                    #correct_space + 
-                    spacing_deviation + 
-                    #compression_rate +
-                    (1|subID), 
-                  data = data)
+                     correct_num + 
+                     correct_width + 
+                     #correct_space + 
+                     spacing_deviation + 
+                     #compression_rate +
+                     (1|subID), 
+                   data = data)
 
 anova(model_1.1, model_1.20)
 anova(model_1.1, model_1.21)
-```
 
 
-```{r}
 pairwise_results <- emmeans(model_1.1, pairwise ~ number_deviation | correct_width)
 
-summary(pairwise_results$contrasts, infer = TRUE, adjust = "Tukey")
-```
 
-```{r}
-model_1.3 <- lmer(width_deviation ~ number_deviation + 
-                    #correct_num + 
-                    #correct_width + 
-                    #correct_space + 
-                    #spacing_deviation + 
-                    #compression_rate +
-                    (1|subID), 
-                  data = data)
+## Filtering only -1 and 0 number deviations -------------------------------
 
-sjPlot::tab_model(
-  model_1.3,
-  p.style = 'scientific_stars',
-  show.se = T,
-  show.stat = T,
-  digits = 3
-)
-```
 
-```{r}
-pairwise_results <- emmeans(model_1.3, pairwise ~ number_deviation)
-
-summary(pairwise_results$contrasts, infer = TRUE, adjust = "Tukey")
-```
-
-## Filtering only -1 and 0 number deviations
-
-```{r}
 data_minus_1_n_0 <- data %>% filter(number_deviation %in% c(-1,0))
 # 684 rows gone
-```
 
-```{r}
+
+
 model_2.1 <- lmer(width_deviation ~ number_deviation* 
                     correct_num* 
                     correct_width* 
                     spacing_deviation + 
                     (1 | subID), 
                   data = data_minus_1_n_0)
-model_table(model_2.1)
-```
 
-```{r}
+model_table(model_2.1)
+
+
+
 pairwise_results <- emmeans(model_2.1, pairwise ~ number_deviation | correct_width + correct_num)
 
 summary(pairwise_results$contrasts, infer = TRUE, adjust = "Tukey")
-```
+
 
