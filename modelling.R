@@ -112,7 +112,7 @@ data_minus_1_n_0 <- data %>% filter(number_deviation %in% c(-1,0))
 
 
 
-model_2.1 <- lmer(width_deviation ~ number_deviation* 
+model_2.1 <- lmer(response_width ~ number_deviation* 
                     correct_num* 
                     correct_width* 
                     spacing_deviation + 
@@ -120,6 +120,7 @@ model_2.1 <- lmer(width_deviation ~ number_deviation*
                   data = data_minus_1_n_0)
 
 model_table(model_2.1)
+data_minus_1_n_0$predicted_response_width <- predict(model_2.1)
 
 
 
