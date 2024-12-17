@@ -140,6 +140,9 @@ df <-  df %>%
   filter(response_rt < 10) %>% #Yildirim & Sayim. Low accuracy and high confidence in redundancy masking
   filter(number_deviation < 4) %>% filter(number_deviation > -4) #same
 
+#There are some trials density is higher than 1
+df <- df %>%
+  filter(response_width_density <= 1) # 10 trials total
 
 
 setwd("G:/My Drive/Projects/RM_adjustment/")
