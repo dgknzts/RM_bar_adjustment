@@ -1,15 +1,11 @@
-
 # libraries ---------------------------------------------------------------
-
-
 library(ggplot2)
-library(dplyr)
+library(tidyverse)
 
 # importing and processing ------------------------------------------------
-
-
 data <- read.csv("processed.csv") %>% 
   filter(exp_version == "Exp1A") %>% 
+  mutate(number_deviation = ifelse(number_deviation < 0, -1, 0)) %>%
   #mutate(response_width = response_width*response_num) %>%
   filter(number_deviation %in% c(-1,0))
 
@@ -104,7 +100,7 @@ rectangle_coords <- data_across_pp %>%
 
 
 ggplot(rectangle_coords, aes(x = x, y = y, fill = number_deviation)) +
-  geom_polygon(color = "black", alpha = 0.5) +
+  geom_polygon(color = "black", alpha = 0.1) +
   coord_fixed() +
   theme_classic() +
   labs(
