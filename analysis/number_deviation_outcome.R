@@ -61,7 +61,7 @@ model_2.0 <- glmer(number_deviation_binom ~  correct_num *
                   family = "binomial",
                   data = data)
 
-model_table(model_2.0, "model_tables/number_deviation_numeric.html")
+model_table(model_2.0, "model_tables/number_deviation_binomial.html")
 
 pairwise_results <- emmeans(model_1.0, pairwise ~ correct_width)
 
