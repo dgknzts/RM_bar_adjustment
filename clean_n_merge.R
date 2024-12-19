@@ -3,9 +3,9 @@ library(tidyverse)
 
 # Initialize the list of directory paths with corresponding experiment versions
 project_info <- list(
-  list(dir = "G:/My Drive/Projects/RM_adjustment/Exp1A/", exp_version = "Exp1A"),
-  list(dir = "G:/My Drive/Projects/RM_adjustment/Exp1B/", exp_version = "Exp1B"),
-  list(dir = "G:/My Drive/Projects/RM_adjustment/Exp1C/", exp_version = "Exp1C")
+  list(dir = "G:/My Drive/Projects/RM_adjustment/Data/Exp1A/", exp_version = "Exp1A"),
+  list(dir = "G:/My Drive/Projects/RM_adjustment/Data/Exp1B/", exp_version = "Exp1B"),
+  list(dir = "G:/My Drive/Projects/RM_adjustment/Data/Exp1C/", exp_version = "Exp1C")
 )
 
 # Initialize an empty data frame to store combined results from all projects
@@ -140,9 +140,16 @@ df <-  df %>%
   filter(response_rt < 10) %>% #Yildirim & Sayim. Low accuracy and high confidence in redundancy masking
   filter(number_deviation < 4) %>% filter(number_deviation > -4) #same
 
-#There are some trials density is higher than 1
+# There are some trials density is higher than 1
 df <- df %>%
   filter(response_width_density <= 1) # 10 trials total
+
+# Edge to edge spacing calculation and eliminating 0 and lower
+df <- df %>% 
+  mutate(
+    edge_to_edge_spacing = response_space - response_width) %>%
+  filter(edge_to_edge_spacing > 0) # 18 trials total
+  
 
 
 setwd("G:/My Drive/Projects/RM_adjustment/")
