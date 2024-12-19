@@ -150,7 +150,15 @@ df <- df %>%
     edge_to_edge_spacing = response_space - response_width) %>%
   filter(edge_to_edge_spacing > 0) # 18 trials total
   
+# add spacing condition
 
+df <- df %>%
+  mutate(spacing = case_when(
+    correct_space <= 0.6 ~ "small",
+    correct_space > 0.6 & correct_space <= 0.8 ~ "middle",
+    correct_space > 0.8 ~ "large",
+    TRUE ~ NA_character_
+  ))
 
 setwd("G:/My Drive/Projects/RM_adjustment/")
 
