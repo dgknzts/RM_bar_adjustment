@@ -153,14 +153,31 @@ df <- df %>%
 # add spacing condition
 
 df <- df %>%
-  mutate(spacing = case_when(
-    correct_space <= 0.6 ~ "small",
-    correct_space > 0.6 & correct_space <= 0.8 ~ "middle",
-    correct_space > 0.8 ~ "large",
-    TRUE ~ NA_character_
-  ))
+  mutate(spacing = if_else(exp_version == "Exp1A", 
+                           case_when(
+                             correct_space <= 0.6 ~ "small",
+                             correct_space > 0.6 & correct_space <= 0.8 ~ "middle",
+                             correct_space > 0.8 ~ "large",
+                             TRUE ~ NA_character_
+                           ), 
+                           if_else(
+                             exp_version == "Exp1B",
+                             case_when(
+                               correct_space <= 0.8 ~ "small",
+                               correct_space > 0.8 & correct_space <= 1 ~ "middle",
+                               correct_space > 1 ~ "large",
+                               TRUE ~ NA_character_
+                             ),
+                             case_when(
+                               correct_space == 0.5 ~ "small",
+                               correct_space == 0.9 ~ "large",
+                               TRUE ~ NA_character_
+                             )
+                             )
+                           ))
 
-setwd("G:/My Drive/Projects/RM_adjustment/")
+
+setwd("G:/My Drive/Projects/RM_adjustment/Data/")
 
 # Save the combined data
 write.csv(df, "processed.csv", row.names = FALSE)
