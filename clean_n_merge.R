@@ -133,6 +133,36 @@ df <- df %>%
     width_density_deviation = response_width_density - actual_width_density
   )
 
+# Counting filtered trials
+# Initial row counts before filtering
+initial_counts <- df %>%
+  group_by(exp_version) %>%
+  summarise(initial_trials = n()) # Count trials for each experiment
+
+# Filtering the data
+df_filtered <- df %>%
+  filter(adjustment_duration > 1) %>% # adjustment time is too quick
+  filter(adjustment_duration < 15) %>% # NOT SURE! 15 sec is too long
+  filter(response_rt < 10) %>% # Yildirim & Sayim. Low accuracy and high confidence in redundancy masking
+  filter(number_deviation < 4) %>% 
+  filter(number_deviation > -4) %>% # same
+  mutate(
+    edge_to_edge_spacing = response_space - response_width
+  ) %>%
+  filter(edge_to_edge_spacing > 0) # Edge-to-edge spacing must be > 0
+
+# Final row counts after filtering
+final_counts <- df_filtered %>%
+  group_by(exp_version) %>%
+  summarise(final_trials = n()) # Count trials for each experiment
+
+# Combine initial and final counts to calculate filtered trials
+filtered_summary <- initial_counts %>%
+  left_join(final_counts, by = "exp_version") %>%
+  mutate(filtered_trials = initial_trials - final_trials,
+         percentage = filtered_trials / final_trials) # Calculate filtered trials
+
+
 # Filtering noise
 df <-  df %>%
   filter(adjustment_duration > 1) %>% #adjustment time is too quick
@@ -140,18 +170,17 @@ df <-  df %>%
   filter(response_rt < 10) %>% #Yildirim & Sayim. Low accuracy and high confidence in redundancy masking
   filter(number_deviation < 4) %>% filter(number_deviation > -4) #same
 
-# There are some trials density is higher than 1
-df <- df %>%
-  filter(response_width_density <= 1) # 10 trials total
-
 # Edge to edge spacing calculation and eliminating 0 and lower
 df <- df %>% 
   mutate(
     edge_to_edge_spacing = response_space - response_width) %>%
-  filter(edge_to_edge_spacing > 0) # 18 trials total
+  filter(edge_to_edge_spacing > 0)
   
-# add spacing condition
 
+
+
+
+# add spacing condition
 df <- df %>%
   mutate(spacing = if_else(exp_version == "Exp1A", 
                            case_when(
