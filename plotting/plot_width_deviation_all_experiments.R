@@ -4,10 +4,10 @@ library(tidyverse)
 library(ggtext)
 
 # importing and processing ------------------------------------------------
-data <- read.csv("processed.csv") %>% 
-  #filter(exp_version == "Exp1A") %>% 
-  #mutate(number_deviation = ifelse(number_deviation < 0, -1, 0)) %>%
-  #mutate(response_width = response_width*response_num) %>%
+setwd("G:/My Drive/Projects/RM_adjustment/")
+data <- read.csv("Data/processed.csv") 
+
+data <- data %>% 
   filter(number_deviation %in% c(-1,0))
 
 

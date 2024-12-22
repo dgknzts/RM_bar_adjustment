@@ -257,4 +257,3 @@ summary_1C <- summary_1C %>%
 all_pairwise_results <- bind_rows(summary_1A, summary_1B, summary_1C)
 
 
-

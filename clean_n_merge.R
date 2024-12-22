@@ -174,11 +174,8 @@ df <-  df %>%
 df <- df %>% 
   mutate(
     edge_to_edge_spacing = response_space - response_width) %>%
-  filter(edge_to_edge_spacing > 0)
+  filter(edge_to_edge_spacing > 0 | response_num == 1)
   
-
-
-
 
 # add spacing condition
 df <- df %>%
