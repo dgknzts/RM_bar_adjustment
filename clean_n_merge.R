@@ -171,10 +171,10 @@ df <-  df %>%
   filter(number_deviation < 4) %>% filter(number_deviation > -4) #same
 
 # Edge to edge spacing calculation and eliminating 0 and lower
-df <- df %>% 
+df2 <- df %>% 
   mutate(
     edge_to_edge_spacing = response_space - response_width) %>%
-  filter(edge_to_edge_spacing > 0)
+  filter(edge_to_edge_spacing > 0 | response_num == 1)
   
 
 
