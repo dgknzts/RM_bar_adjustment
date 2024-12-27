@@ -1,6 +1,7 @@
 # Before modelling -----------------------------------------------------------
 library(tidyverse)
 library(emmeans)
+library(lme4)
 
 model_table <- function(modelx) {
   sjPlot::tab_model(
@@ -228,9 +229,7 @@ best_model_C = model_3C
 model_table(best_model_C)
 
 ## Post-hoc comparisons -------------------------------------
-pairwise_results_c <- emmeans(best_model_C, 
-                              pairwise ~ number_deviation | correct_width + correct_num, 
-                              pbkrtest.limit = nrow(data_1C))
+pairwise_results_c <- emmeans(best_model_C)
 
 summary_1C <- summary(pairwise_results_c$contrasts,
                       infer = TRUE, 
