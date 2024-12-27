@@ -117,8 +117,8 @@ model_1B <- lmer(width_deviation ~  number_deviation *
 model_table(model_1B)
 
 ## No interaction between number deviation and others
-model_2B <- lmer(width_deviation ~  number_deviation *
-                   spacing +
+model_2B <- lmer(width_deviation ~  number_deviation +
+                   spacing *
                    correct_num *
                    correct_width +
                    (1|subID),
@@ -256,3 +256,83 @@ summary_1C <- summary_1C %>%
 all_pairwise_results <- bind_rows(summary_1A, summary_1B, summary_1C)
 
 
+# Trying edge to edge spacing instead and compare with center to center --------------------------
+summary(data$edge_to_edge_spacing)
+# plot the edge to edge spacing distribution
+ggplot(data, aes(x = edge_to_edge_spacing, y = width_deviation, color = number_deviation)) +
+  geom_point(position = position_jitter(),
+             alpha = 0.5) +
+  geom_smooth(method = "lm") +
+  theme_classic()
+
+# Experiment 1A ------------------------------------------
+data_1A <- data %>% filter(exp_version == "Exp1A")
+
+# Centering the width deviation to zero
+data_1A$width_deviation <- data_1A$width_deviation - mean(data_1A$width_deviation)
+
+
+# Model edge to edge
+Model_1A_edge <- lmer(width_deviation ~  number_deviation *
+                        correct_num*
+                        correct_width*
+                        edge_to_edge_spacing +
+                        (1|subID),
+                      data = data_1A)
+model_table(Model_1A_edge)
+
+Model_1A_center <- lmer(width_deviation ~  number_deviation *
+                          correct_num*
+                          correct_width*
+                          correct_space +
+                          (1|subID),
+                        data = data_1A)
+model_table(Model_1A_center)
+anova(Model_1A_edge, Model_1A_center)
+# Edge to edge is better...
+
+# Reducing
+Model_1.1A_edge <- lmer(width_deviation ~  number_deviation *
+                          #correct_num *
+                          correct_width *
+                          edge_to_edge_spacing +
+                          (1|subID),
+                        data = data_1A)
+anova(Model_1A_edge, Model_1.1A_edge)
+
+# Experiment 1B ------------------------------------------
+data_1B <- data %>% filter(exp_version == "Exp1B")
+
+# Centering the width deviation to zero
+data_1B$width_deviation <- data_1B$width_deviation - mean(data_1B$width_deviation)
+
+# Model edge to edge
+Model_1B_edge <- lmer(width_deviation ~  number_deviation *
+                        correct_num *
+                        correct_width *
+                        edge_to_edge_spacing +
+                        (1|subID),
+                      data = data_1B)
+model_table(Model_1B_edge)
+
+Model_1B_center <- lmer(width_deviation ~  number_deviation *
+                          correct_num *
+                          correct_width *
+                          correct_space +
+                          (1|subID),
+                        data = data_1B)
+model_table(Model_1B_center)
+
+anova(Model_1B_edge, Model_1B_center)
+# Edge is better...
+# Reducing
+Model_1.1B_edge <- lmer(width_deviation ~  number_deviation *
+                          correct_num +
+                          correct_width *
+                          edge_to_edge_spacing +
+                          (1|subID),
+                        data = data_1B)
+anova(Model_1B_edge, Model_1.1B_edge)
+
+# Experiment 1C ------------------------------------------
+# Does not have spacing as sep factor
