@@ -269,7 +269,7 @@ ggplot(data, aes(x = edge_to_edge_spacing, y = width_deviation, color = number_d
 data_1A <- data %>% filter(exp_version == "Exp1A")
 
 # Centering the width deviation to zero
-data_1A$width_deviation <- data_1A$width_deviation - mean(data_1A$width_deviation)
+#data_1A$width_deviation <- data_1A$width_deviation - mean(data_1A$width_deviation)
 
 
 # Model edge to edge
@@ -304,7 +304,7 @@ anova(Model_1A_edge, Model_1.1A_edge)
 data_1B <- data %>% filter(exp_version == "Exp1B")
 
 # Centering the width deviation to zero
-data_1B$width_deviation <- data_1B$width_deviation - mean(data_1B$width_deviation)
+#data_1B$width_deviation <- data_1B$width_deviation - mean(data_1B$width_deviation)
 
 # Model edge to edge
 Model_1B_edge <- lmer(width_deviation ~  number_deviation *
@@ -336,3 +336,61 @@ anova(Model_1B_edge, Model_1.1B_edge)
 
 # Experiment 1C ------------------------------------------
 # Does not have spacing as sep factor
+
+# Modelling with taking variables as continuous
+data <- read.csv("Data/processed.csv")
+
+data$subID <- as.factor(data$subID)
+data$exp_version <- as.factor(data$exp_version)
+data$keyboard_condition <- as.factor(data$keyboard_condition)
+data$trial_type <- as.factor(data$trial_type)
+
+data <- data %>%
+  filter(number_deviation %in% c("-1" ,"0")) %>% #comparing only -1 and 0
+  mutate(number_deviation = as.factor(number_deviation))
+
+# Set reference num dev 0
+data$exp_version <- relevel(data$exp_version, ref = "Exp1B")
+levels(data$exp_version)
+
+
+# Modellin all experiments together
+model_1_all <- lmer(width_deviation ~  number_deviation +
+                      correct_num +
+                      correct_width +
+                      edge_to_edge_spacing +
+                      exp_version +
+                      (1|subID),
+                    data = data)
+model_table(model_1_all)
+# Looks like Exp1A and 1B are are not differ from each other unlike Exp1C.
+
+# Modelling A and B together?
+data_AB <- data %>%
+  filter(exp_version %in% c("Exp1A", "Exp1B"))
+
+model_1.1_AB <- lmer(width_deviation ~  number_deviation +
+                        correct_num +
+                        correct_width +
+                        edge_to_edge_spacing +
+                        exp_version +
+                        (1|subID),
+                      data = data_AB)
+
+model_1.2_AB <- lmer(width_deviation ~  number_deviation +
+                        correct_num +
+                        correct_width +
+                        edge_to_edge_spacing +
+                        (1|subID),
+                      data = data_AB)
+anova(model_1.1_AB, model_1.2_AB)
+
+model_1.3_AB <- lmer(width_deviation ~  number_deviation *
+                        correct_num *
+                        correct_width *
+                        edge_to_edge_spacing +
+                        (1|subID),
+                      data = data_AB)
+anova(model_1.2_AB, model_1.3_AB)
+
+
