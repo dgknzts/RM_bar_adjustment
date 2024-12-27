@@ -53,7 +53,7 @@ plot_width_all <- ggplot(data, aes(x = edge_to_edge_spacing,
              size = 3,
              position = position_jitter(width = 0.05)) +  # Continuous variable requires points instead of position_dodge
   
-  geom_smooth(method = "lm", 
+  geom_smooth(method = "loess", 
               se = TRUE,  # Show confidence interval
               aes(fill = factor(number_deviation, levels = c(-1, 0))),
               alpha = 0.2,
@@ -85,14 +85,14 @@ plot_width_all <- ggplot(data, aes(x = edge_to_edge_spacing,
   
   labs(
     title = "Width Deviation by Spacing + Width and Number Deviation",
-    x = "Actual Spacing",
+    x = "Edge to Edge Spacing",
     y = "Width Deviation",
     fill = "Number\nDeviation"
   ) + 
   
-  geom_vline(xintercept = 0.1) +
-  geom_vline(xintercept = 0.25) +
-  geom_vline(xintercept = 0.4) +
+  # geom_vline(xintercept = 0.1) +
+  # geom_vline(xintercept = 0.25) +
+  # geom_vline(xintercept = 0.4) +
   geom_vline(xintercept = 0.55) +
   
   coord_flip() +
