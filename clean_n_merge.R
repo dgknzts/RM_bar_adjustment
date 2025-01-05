@@ -1,6 +1,6 @@
 library(tidyverse)
 
-
+main_dir = "G:/My Drive/Projects/RM_adjustment/"
 # Initialize the list of directory paths with corresponding experiment versions
 project_info <- list(
   list(dir = "G:/My Drive/Projects/RM_adjustment/Data/Exp1A/", exp_version = "Exp1A"),
@@ -130,37 +130,16 @@ df <- df %>%
     
     actual_width_density = actual_pooled_width / stim_length,
     response_width_density = response_pooled_width / response_stim_length,
-    width_density_deviation = response_width_density - actual_width_density
+    width_density_deviation = response_width_density - actual_width_density,
+    
+    actual_edge_to_edge_spacing = correct_space - correct_width,
+    response_edge_to_edge_spacing = response_space - response_width,
+    edge_to_edge_spacing_deviation = response_edge_to_edge_spacing - actual_edge_to_edge_spacing
   )
 
 # Counting filtered trials
-# Initial row counts before filtering
-initial_counts <- df %>%
-  group_by(exp_version) %>%
-  summarise(initial_trials = n()) # Count trials for each experiment
-
-# Filtering the data
-df_filtered <- df %>%
-  filter(adjustment_duration > 1) %>% # adjustment time is too quick
-  filter(adjustment_duration < 15) %>% # NOT SURE! 15 sec is too long
-  filter(response_rt < 10) %>% # Yildirim & Sayim. Low accuracy and high confidence in redundancy masking
-  filter(number_deviation < 4) %>% 
-  filter(number_deviation > -4) %>% # same
-  mutate(
-    edge_to_edge_spacing = response_space - response_width
-  ) %>%
-  filter(edge_to_edge_spacing > 0) # Edge-to-edge spacing must be > 0
-
-# Final row counts after filtering
-final_counts <- df_filtered %>%
-  group_by(exp_version) %>%
-  summarise(final_trials = n()) # Count trials for each experiment
-
-# Combine initial and final counts to calculate filtered trials
-filtered_summary <- initial_counts %>%
-  left_join(final_counts, by = "exp_version") %>%
-  mutate(filtered_trials = initial_trials - final_trials,
-         percentage = filtered_trials / final_trials) # Calculate filtered trials
+setwd(main_dir)
+source("counting_exclusions.R")
 
 
 # Filtering noise
@@ -168,13 +147,8 @@ df <-  df %>%
   filter(adjustment_duration > 1) %>% #adjustment time is too quick
   filter(adjustment_duration < 15) %>% #NOT SURE! 15 sec is too long
   filter(response_rt < 10) %>% #Yildirim & Sayim. Low accuracy and high confidence in redundancy masking
-  filter(number_deviation < 4) %>% filter(number_deviation > -4) #same
-
-# Edge to edge spacing calculation and eliminating 0 and lower
-df2 <- df %>% 
-  mutate(
-    edge_to_edge_spacing = response_space - response_width) %>%
-  filter(edge_to_edge_spacing > 0 | response_num == 1)
+  filter(number_deviation < 4) %>% filter(number_deviation > -4) %>% #same
+  filter(response_edge_to_edge_spacing > 0 | response_num == 1)
   
 
 # add spacing condition
@@ -203,7 +177,5 @@ df <- df %>%
                            ))
 
 
-setwd("G:/My Drive/Projects/RM_adjustment/Data/")
-
 # Save the combined data
-write.csv(df, "processed.csv", row.names = FALSE)
+write.csv(df, "data/processed.csv", row.names = FALSE)

@@ -10,6 +10,8 @@ data <- read.csv("Data/processed.csv")
 data <- data %>% 
   filter(number_deviation %in% c(-1,0)) %>%
   filter(exp_version != "Exp1C")
+
+
 # We need a new spacing categorization
 # because we are comparing different experiments
 # OR we can use spacing without categorizing it.
